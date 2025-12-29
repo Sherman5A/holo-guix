@@ -1,4 +1,4 @@
-(define-module (packages wm)
+(define-module (holo wm)
   #:use-module (guix)
   #:use-module ((guix licenses)
                 #:prefix license:)
@@ -18,7 +18,7 @@
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/LBCrion/sfwbar.git")
+             (url "https://github.com/LBCrion/sfwbar")
              (commit "v1.0_beta16.1")))
        (file-name (git-file-name name version))
        (sha256
@@ -35,8 +35,8 @@
                              #$output "/lib/sfwbar"))))
     (home-page "https://github.com/LBCrion/sfwbar")
     (synopsis
-     "SFWBar (S* Floating Window Bar) is a flexible taskbar application for wayland compositors, designed with a stacking layout in mind. Originally developed for Sway, SFWBar will work with any wayland compositor supporting layer shell protocol, the taskbar and window switcher functionality shall work with any compositor supportinig foreign toplevel protocol, but the pager, and window placement functionality require sway (or at least i3 IPC support).")
-    (description "S* Floating Window Bar ")
+      "Flexible taskbar application for wayland compositors")
+    (description "S* Floating Window Bar.")
     (license license:gpl3)))
 
 ;; This allows you to run guix shell -f guix-packager.scm.
