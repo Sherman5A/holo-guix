@@ -3,6 +3,7 @@
   #:use-module ((guix licenses)
                 #:prefix license:)
   #:use-module (gnu packages)
+  #:use-module (gnu packages python)
   #:use-module (gnu packages pkg-config)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system glib-or-gtk)
@@ -25,6 +26,7 @@
         (base32 "0sli2ap6wbhr9d85jckhll3b71hf7sxn1kni94g1ymdlgxfl23sq"))))
     (native-inputs (list pkg-config))
     (inputs (list json-c gtk-layer-shell gtk+))
+    (propagated-inputs (list python))
     (build-system meson-build-system)
     (arguments
      (list
@@ -41,5 +43,5 @@
 
 ;; This allows you to run guix shell -f guix-packager.scm.
 ;; Remove this line if you just want to define a package.
-;; sfwbar
+sfwbar
 
