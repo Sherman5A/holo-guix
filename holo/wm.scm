@@ -72,5 +72,5 @@
 ;; This allows you to run guix shell -f wm.scm.
 ;; Remove this line if you just want to define a package.
 ;;sfwbar
-labwc-menu-generator
+;;labwc-menu-generator
 
