@@ -30,8 +30,31 @@
    (description "Gtk-Theme-Raleigh is a re-creation of the original Raleigh theme.")
    (license license:gpl3)))
 
+(define-public raleigh-olive-theme
+  (package
+    (name "raleigh-olive-theme")
+    (version "3.24.19")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/Aalexeey/gtk-theme-raleigholive/")
+             (commit version)))
+       (sha256
+        (base32
+         "1zj997vn54n0fcs1ln4ijdbs04cj0h3z7n2kh8g7icnzln16n63x"))
+       (file-name (git-file-name name version))))
+    (build-system copy-build-system)
+    (arguments
+     `(#:install-plan
+       `(("themes" "share/themes") ("icons" "share/icons"))))
+    (home-page "https://github.com/Aalexeey/gtk-theme-raleigholive")
+    (synopsis "Olive version of the old Raleigh theme for GTK+ 2 & GTK+ 3")
+    (description "Olive version of Raleigh. Includes theme and icons.")
+    (license license:gpl2)))
+
 
 ;; This allows you to run guix shell -f gtk.scm.
 ;; Remove this line if you just want to define a package.
 ;; raleigh-theme
-
+;;raleigh-olive-theme
