@@ -3,7 +3,7 @@
   #:use-module (guix packages)
   #:use-module (guix git-download))
 
-(define gallery-dl
+(define-public gallery-dl-holo
   (package
     (inherit gallery-dl)
     (version "1.32.10")
