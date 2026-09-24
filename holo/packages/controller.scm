@@ -23,11 +23,12 @@
      #:install-source? #f
      #:phases
      #~(modify-phases %standard-phases
-		      (add-after 'install 'install-library
-				 (lambda _
-				   ;; Copy the .so file directly using the inlined #$output path
-				   (install-file "target/release/libextest.so"
-						 (string-append #$output "/lib")))))
+         (add-after 'install 'install-library
+           (lambda _
+             ;; Target directory is 'target/i686-unknown-linux-gnu/release/' 
+             ;; install-file takes (file destination-directory)
+             (install-file "target/i686-unknown-linux-gnu/release/libextest.so"
+                           (string-append #$output "/lib")))))
      ;; #~(modify-phases %standard-phases
      ;; (add-after 'install 'install-library
      ;; (lambda* (#:key outputs #:allow-other-keys)
