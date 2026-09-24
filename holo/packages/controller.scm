@@ -21,6 +21,7 @@
    (arguments
     (list
      #:install-source? #f
+     #:target "i686-linux-gnu"
      #:phases
      #~(modify-phases %standard-phases
          (add-after 'install 'install-library
