@@ -15,16 +15,16 @@
 (define-public sfwbar
   (package
    (name "sfwbar")
-   (version "v1.0_beta16.1")
+   (version "v1.0_beta17")
    (source
     (origin
      (method git-fetch)
      (uri (git-reference
            (url "https://github.com/LBCrion/sfwbar")
-           (commit "v1.0_beta16.1")))
+           (commit version)))
      (file-name (git-file-name name version))
      (sha256
-      (base32 "0sli2ap6wbhr9d85jckhll3b71hf7sxn1kni94g1ymdlgxfl23sq"))))
+      (base32 "0akfmgz84jdyjl37g1kl8zs9km83k1v9b3n47bnxk49rd9qdgsf5"))))
    (native-inputs (list pkg-config))
    (inputs (list json-c gtk-layer-shell gtk+))
    (propagated-inputs (list python))
