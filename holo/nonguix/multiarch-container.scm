@@ -394,6 +394,9 @@ in a sandboxed FHS environment."
 				;; so set this path to where the drivers will actually be located in
 				;; the container.
 				(setenv "LIBVA_DRIVERS_PATH" "/lib64/dri:/lib/dri")
+				(setenv "LD_LIBRARY_PATH"
+					(string-append "/lib64:/lib:/lib64/nss:/lib/nss:"
+						       "/lib64/vdpau:/lib/vdpau"))
 				(setenv "LD_PRELOAD" "libextest.so")
 				(format #t "\n* Launching ~a in sandbox: ~a.\n\n"
 					#$(package-name (ngc-wrap-package container)) sandbox-home)
