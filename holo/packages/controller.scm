@@ -21,15 +21,14 @@
    (arguments
     (list
      #:install-source? #f
-     #:target "i686-linux-gnu"
      #:phases
      #~(modify-phases %standard-phases
-         (add-after 'install 'install-library
-           (lambda _
-             ;; Target directory is 'target/i686-unknown-linux-gnu/release/' 
-             ;; install-file takes (file destination-directory)
-             (install-file "target/i686-unknown-linux-gnu/release/libextest.so"
-                           (string-append #$output "/lib")))))
+		      (add-after 'install 'install-library
+				 (lambda _
+				   ;; Target directory is 'target/i686-unknown-linux-gnu/release/' 
+				   ;; install-file takes (file destination-directory)
+				   (install-file "target/release/libextest.so"
+						 (string-append #$output "/lib")))))
      ;; #~(modify-phases %standard-phases
      ;; (add-after 'install 'install-library
      ;; (lambda* (#:key outputs #:allow-other-keys)
@@ -48,3 +47,20 @@
    (description
     "Extest is a drop in replacement for the X11 XTEST extension. It creates a virtual device with the uinput kernel module. It's been primarily developed for allowing the desktop functionality on the Steam Controller to work while Steam is open on Wayland.")
    (license expat)))
+
+(define-public libextest-32
+  (package
+   (inherit libextest)
+   (name "libextest-32")
+   (arguments
+    (list
+     #:install-source? #f
+     #:target "i686-linux-gnu"
+     #:phases
+     #~(modify-phases %standard-phases
+		      (add-after 'install 'install-library
+				 (lambda _
+				   ;; Target directory is 'target/i686-unknown-linux-gnu/release/' 
+				   ;; install-file takes (file destination-directory)
+				   (install-file "target/i686-unknown-linux-gnu/release/libextest.so"
+						 (string-append #$output "/lib")))))))))

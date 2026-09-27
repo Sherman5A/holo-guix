@@ -62,108 +62,108 @@
 
 (define heroic-client
   (package
-    (name "heroic-client")
-    (version "2.22.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://github.com/Heroic-Games-Launcher/"
-                           "HeroicGamesLauncher/releases/download/v"
-                           version "/Heroic-" version "-linux-amd64.deb"))
-       (sha256
-        (base32
-         "0j59yqq31pysllsmzkdpaxiwggf4bmv281y30iw4n5287dkdnfrg"))))
-    (build-system chromium-binary-build-system)
-    (arguments
-     (list #:validate-runpath? #f ; TODO: fails on wrapped binary and included other files
-           #:wrapper-plan
-           #~'(("lib/Heroic/heroic" (("out" "/lib/Heroic"))))
-           #:phases
-           #~(modify-phases %standard-phases
-               (add-after 'binary-unpack 'setup-cwd
-                 (lambda _
-                   (copy-recursively "usr/" ".")
-                   ;; Use the more standard lib directory for everything.
-                   (rename-file "opt/" "lib")
-                   ;; Remove unneeded files.
-                   (delete-file-recursively "usr")))
-               ;; Fix the .desktop file "Exec" line to just be "heroic" in
-               ;; order for this desktop file to be useful to launch heroic in
-               ;; the container (heroic package) as well.
-               (add-after 'patch-dot-desktop-files 'fix-desktop-file
-                 (lambda _
-                   (substitute*
-                       (string-append #$output "/share/applications/heroic.desktop")
-                     (("Exec=.*/heroic") "Exec=heroic"))))
-               (delete 'patch-dot-desktop-files)
-               (add-after 'install 'symlink-binary-file
-                 (lambda _
-                   (mkdir-p (string-append #$output "/bin"))
-                   (symlink (string-append #$output "/lib/Heroic/heroic")
-                            (string-append #$output "/bin/heroic")))))))
-    (home-page "https://heroicgameslauncher.com")
-    (synopsis "Native GOG, Amazon and Epic Games Launcher")
-    (description "Heroic is an Open Source Game Launcher.  Right now it supports launching
+   (name "heroic-client")
+   (version "2.22.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (string-append "https://github.com/Heroic-Games-Launcher/"
+                         "HeroicGamesLauncher/releases/download/v"
+                         version "/Heroic-" version "-linux-amd64.deb"))
+     (sha256
+      (base32
+       "0j59yqq31pysllsmzkdpaxiwggf4bmv281y30iw4n5287dkdnfrg"))))
+   (build-system chromium-binary-build-system)
+   (arguments
+    (list #:validate-runpath? #f ; TODO: fails on wrapped binary and included other files
+          #:wrapper-plan
+          #~'(("lib/Heroic/heroic" (("out" "/lib/Heroic"))))
+          #:phases
+          #~(modify-phases %standard-phases
+			   (add-after 'binary-unpack 'setup-cwd
+				      (lambda _
+					(copy-recursively "usr/" ".")
+					;; Use the more standard lib directory for everything.
+					(rename-file "opt/" "lib")
+					;; Remove unneeded files.
+					(delete-file-recursively "usr")))
+			   ;; Fix the .desktop file "Exec" line to just be "heroic" in
+			   ;; order for this desktop file to be useful to launch heroic in
+			   ;; the container (heroic package) as well.
+			   (add-after 'patch-dot-desktop-files 'fix-desktop-file
+				      (lambda _
+					(substitute*
+					 (string-append #$output "/share/applications/heroic.desktop")
+					 (("Exec=.*/heroic") "Exec=heroic"))))
+			   (delete 'patch-dot-desktop-files)
+			   (add-after 'install 'symlink-binary-file
+				      (lambda _
+					(mkdir-p (string-append #$output "/bin"))
+					(symlink (string-append #$output "/lib/Heroic/heroic")
+						 (string-append #$output "/bin/heroic")))))))
+   (home-page "https://heroicgameslauncher.com")
+   (synopsis "Native GOG, Amazon and Epic Games Launcher")
+   (description "Heroic is an Open Source Game Launcher.  Right now it supports launching
 games from the Epic Games Store using Legendary, GOG Games using our custom
 implementation with gogdl and Amazon Games using Nile.")
-    (license license:gpl3)
-    (supported-systems '("x86_64-linux"))))
+   (license license:gpl3)
+   (supported-systems '("x86_64-linux"))))
 
 (define steam-client
   (package
-    (name "steam-client")
-    (version "1.0.0.85")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "http://repo.steampowered.com/steam/archive/precise/steam_"
-                           version ".tar.gz"))
-       (sha256
-        (base32
-         "1wdpigrwrjqnf2vlnaw7ani1in8rc92m2l8jp3aww4xl5x53fbbz"))
-       (file-name (string-append name "-" version ".tar.gz"))))
-    (build-system gnu-build-system)
-    (arguments
-     `(#:tests? #f ; There are no tests.
-       #:validate-runpath? #f ; Looks for bin/steam which doesn't exist.
-       #:make-flags
-       (list "PREFIX=" (string-append "DESTDIR=" (assoc-ref %outputs "out")))
-       #:phases
-       (modify-phases %standard-phases
-         (delete 'configure)
-         ;; Patch Makefile so it creates links to the store rather than /lib.
-         (add-after 'unpack 'patch-makefile
-           (lambda _
-             (substitute* "Makefile"
-               (("-fns ")
-                "-fns $(DESTDIR)"))))
-         (add-after 'unpack 'patch-startscript
-           (lambda _
-             (substitute* "bin_steam.sh"
-               (("/usr") (assoc-ref %outputs "out")))))
-         (add-after 'patch-dot-desktop-files 'patch-desktop-file
-           (lambda _
-             (let ((path (string-append (assoc-ref %outputs "out")
-                                        "/share/applications/")))
-               (substitute* (string-append path "steam.desktop")
-                 (("Exec=.*/steam") "Exec=steam"))
-               (copy-file (string-append path "steam.desktop")
-                          (string-append path "steam-asound32.desktop"))
-               (substitute* (string-append path "steam-asound32.desktop")
-                 (("Exec=steam %U") "Exec=steam %U -- --asound32")
-                 (("Name=Steam") "Name=Steam (32-bit ALSA)")))))
-         (delete 'patch-dot-desktop-files)
-         ;; Steamdeps installs missing packages, which doesn't work with Guix.
-         (add-after 'install 'post-install
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out (assoc-ref %outputs "out")))
-               (delete-file (string-append out "/lib/steam/bin_steamdeps.py"))
-               (delete-file (string-append out "/bin/steamdeps"))))))))
-    (home-page "https://store.steampowered.com")
-    (synopsis "Digital distribution platform for managing and playing games")
-    (description "Steam is a digital software distribution platform created by Valve.")
-    (license (license:nonfree "file:///share/doc/steam/steam_subscriber_agreement.txt"))
-    (supported-systems '("x86_64-linux"))))
+   (name "steam-client")
+   (version "1.0.0.85")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (string-append "http://repo.steampowered.com/steam/archive/precise/steam_"
+                         version ".tar.gz"))
+     (sha256
+      (base32
+       "1wdpigrwrjqnf2vlnaw7ani1in8rc92m2l8jp3aww4xl5x53fbbz"))
+     (file-name (string-append name "-" version ".tar.gz"))))
+   (build-system gnu-build-system)
+   (arguments
+    `(#:tests? #f ; There are no tests.
+      #:validate-runpath? #f ; Looks for bin/steam which doesn't exist.
+      #:make-flags
+      (list "PREFIX=" (string-append "DESTDIR=" (assoc-ref %outputs "out")))
+      #:phases
+      (modify-phases %standard-phases
+		     (delete 'configure)
+		     ;; Patch Makefile so it creates links to the store rather than /lib.
+		     (add-after 'unpack 'patch-makefile
+				(lambda _
+				  (substitute* "Makefile"
+					       (("-fns ")
+						"-fns $(DESTDIR)"))))
+		     (add-after 'unpack 'patch-startscript
+				(lambda _
+				  (substitute* "bin_steam.sh"
+					       (("/usr") (assoc-ref %outputs "out")))))
+		     (add-after 'patch-dot-desktop-files 'patch-desktop-file
+				(lambda _
+				  (let ((path (string-append (assoc-ref %outputs "out")
+							     "/share/applications/")))
+				    (substitute* (string-append path "steam.desktop")
+						 (("Exec=.*/steam") "Exec=steam"))
+				    (copy-file (string-append path "steam.desktop")
+					       (string-append path "steam-asound32.desktop"))
+				    (substitute* (string-append path "steam-asound32.desktop")
+						 (("Exec=steam %U") "Exec=steam %U -- --asound32")
+						 (("Name=Steam") "Name=Steam (32-bit ALSA)")))))
+		     (delete 'patch-dot-desktop-files)
+		     ;; Steamdeps installs missing packages, which doesn't work with Guix.
+		     (add-after 'install 'post-install
+				(lambda* (#:key inputs outputs #:allow-other-keys)
+				  (let ((out (assoc-ref %outputs "out")))
+				    (delete-file (string-append out "/lib/steam/bin_steamdeps.py"))
+				    (delete-file (string-append out "/bin/steamdeps"))))))))
+   (home-page "https://store.steampowered.com")
+   (synopsis "Digital distribution platform for managing and playing games")
+   (description "Steam is a digital software distribution platform created by Valve.")
+   (license (license:nonfree "file:///share/doc/steam/steam_subscriber_agreement.txt"))
+   (supported-systems '("x86_64-linux"))))
 
 (define steam-client-libs
   `(("at-spi2-core" ,at-spi2-core)      ; Required (often) for SteamVR interface.
@@ -203,6 +203,7 @@ implementation with gogdl and Amazon Games using Nile.")
     ("procps" ,procps)
     ("libei" ,libei)
     ("libextest" ,libextest)
+    ("libextest-32" ,libextest-32)
     ("sed" ,sed)
     ("tar" ,tar)
     ("usbutils" ,usbutils)              ; Required for SteamVR.
@@ -250,19 +251,19 @@ implementation with gogdl and Amazon Games using Nile.")
 
 (define-public (steam-container-for driver)
   (nonguix-container
-    (name "steam")
-    (wrap-package steam-client)
-    (run "/bin/steam")
-    (packages
-     (modify-inputs steam-container-libs
-       (replace "mesa" driver)))
-    (union32
-     (fhs-union (modify-inputs steam-i686-libs
-                  (replace "mesa" driver))
-                #:name "fhs-union-32"
-                #:system "i686-linux"))
-    (link-files '("share"))
-    (description "Steam is a digital software distribution platform created by
+   (name "steam")
+   (wrap-package steam-client)
+   (run "/bin/steam")
+   (packages
+    (modify-inputs steam-container-libs
+		   (replace "mesa" driver)))
+   (union32
+    (fhs-union (modify-inputs steam-i686-libs
+			      (replace "mesa" driver))
+               #:name "fhs-union-32"
+               #:system "i686-linux"))
+   (link-files '("share"))
+   (description "Steam is a digital software distribution platform created by
 Valve.  This package provides a script for launching Steam in a Guix container
 which will use the directory @file{$HOME/.local/share/guix-sandbox-home} where
 all games will be installed.")))
@@ -273,32 +274,32 @@ all games will be installed.")))
 
 (define-public (heroic-container-for driver)
   (nonguix-container
-    (name "heroic")
-    (wrap-package heroic-client)
-    (run "/bin/heroic")
-    ;; TODO: Probably can remove some of the packages from these lists, at
-    ;; least changing the client libraries as Heroic is rather different from
-    ;; Steam.  However, a good number will be needed to run games anyway.  A
-    ;; better separation and testing in Steam as well would be helpful to
-    ;; differentiate what packages are needed for what in general.  For now,
-    ;; this is easier and works.
-    (packages
-     (modify-inputs `(,@heroic-extra-client-libs
-                      ,@steam-container-libs)
-       (replace "mesa" driver)))
-    ;; Don't include heroic-client-libs as they are not needed in 32-bit.
-    (union32
-     (fhs-union (modify-inputs steam-i686-libs
-                  (replace "mesa" driver)
-                  ;; The first python found will be used and it needs to be
-                  ;; 64-bit.
-                  ;; TODO: Change order in manifest, or set PATH, but Steam
-                  ;; needs a 32-bit ldd (found first?).
-                  (delete "python"))
-                #:name "fhs-union-32"
-                #:system "i686-linux"))
-    (link-files '("share"))
-    (description "Heroic is an Open Source Game Launcher.  Right now it supports launching
+   (name "heroic")
+   (wrap-package heroic-client)
+   (run "/bin/heroic")
+   ;; TODO: Probably can remove some of the packages from these lists, at
+   ;; least changing the client libraries as Heroic is rather different from
+   ;; Steam.  However, a good number will be needed to run games anyway.  A
+   ;; better separation and testing in Steam as well would be helpful to
+   ;; differentiate what packages are needed for what in general.  For now,
+   ;; this is easier and works.
+   (packages
+    (modify-inputs `(,@heroic-extra-client-libs
+                     ,@steam-container-libs)
+		   (replace "mesa" driver)))
+   ;; Don't include heroic-client-libs as they are not needed in 32-bit.
+   (union32
+    (fhs-union (modify-inputs steam-i686-libs
+			      (replace "mesa" driver)
+			      ;; The first python found will be used and it needs to be
+			      ;; 64-bit.
+			      ;; TODO: Change order in manifest, or set PATH, but Steam
+			      ;; needs a 32-bit ldd (found first?).
+			      (delete "python"))
+               #:name "fhs-union-32"
+               #:system "i686-linux"))
+   (link-files '("share"))
+   (description "Heroic is an Open Source Game Launcher.  Right now it supports launching
 games from the Epic Games Store using Legendary, GOG Games using our custom
 implementation with gogdl and Amazon Games using Nile.  This package provides
 a script for launching Heroic in a Guix container which will use the directory
@@ -311,27 +312,27 @@ installed.")))
 
 (define-public protonup
   (package
-    (name "protonup")
-    (version "0.1.5")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-              (url "https://github.com/AUNaseef/protonup")
-              (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "16i6flaljd3fb5dpr915ajxyx5mgfvzh42gx183kssmdy8hhk87r"))))
-    (build-system pyproject-build-system)
-    (arguments
-     (list #:tests? #f)) ; there are no tests
-    (inputs (list python-configparser python-requests))
-    (native-inputs (list python-setuptools))
-    (home-page "https://github.com/AUNaseef/protonup")
-    (synopsis "Manage Proton-GE Installations")
-    (description "Protonup is a CLI program and API to automate the
+   (name "protonup")
+   (version "0.1.5")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://github.com/AUNaseef/protonup")
+           (commit version)))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "16i6flaljd3fb5dpr915ajxyx5mgfvzh42gx183kssmdy8hhk87r"))))
+   (build-system pyproject-build-system)
+   (arguments
+    (list #:tests? #f)) ; there are no tests
+   (inputs (list python-configparser python-requests))
+   (native-inputs (list python-setuptools))
+   (home-page "https://github.com/AUNaseef/protonup")
+   (synopsis "Manage Proton-GE Installations")
+   (description "Protonup is a CLI program and API to automate the
 installation and update of GloriousEggroll's Proton-GE.")
-    (license license:gpl3)))
+   (license license:gpl3)))
 
 (define-public protonup-ng
   (deprecated-package "protonup-ng" protonup))
