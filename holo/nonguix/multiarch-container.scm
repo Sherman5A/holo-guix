@@ -627,7 +627,6 @@ application."
                                    "/lib64/vdpau:/lib/vdpau"))
             ;; Fix controller detection.
             ;; See <https://gitlab.com/nonguix/nonguix/-/issues/384>
-            (setenv "SDL_JOYSTICK_DISABLE_UDEV" "1")
             (setenv "LD_PRELOAD" "libextest.so")
             ;; Set GStreamer plugin paths so both 64-bit and 32-bit plugins are visible
             ;; inside the container. Needed for GStreamer plugins to load in container.
