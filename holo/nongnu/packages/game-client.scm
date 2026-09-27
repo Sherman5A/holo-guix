@@ -234,7 +234,6 @@ implementation with gogdl and Amazon Games using Nile.")
   (append `(("eudev" ,eudev)
             ("gcc:lib" ,gcc-14 "lib")
             ("libva" ,libva)
-	    ("libextest", libextest-32)
             ("libvdpau" ,libvdpau)
             ("libvdpau-va-gl" ,libvdpau-va-gl)
             ("llvm" ,llvm-for-mesa)
@@ -258,10 +257,15 @@ implementation with gogdl and Amazon Games using Nile.")
     (modify-inputs steam-container-libs
 		   (replace "mesa" driver)))
    (union32
-    (fhs-union (modify-inputs steam-i686-libs
-			      (replace "mesa" driver))
-               #:name "fhs-union-32"
-               #:system "i686-linux"))
+    (fhs-union
+     `(("i686-libs"
+        ,(fhs-union (modify-inputs steam-i686-libs
+				   (replace "mesa" driver))
+                    #:name "fhs-union-32-libs"
+                    #:system "i686-linux"))
+       ("libextest" ,libextest-32))
+     #:name "fhs-union-32"
+     #:system "x86_64-linux"))
    (link-files '("share"))
    (description "Steam is a digital software distribution platform created by
 Valve.  This package provides a script for launching Steam in a Guix container
@@ -289,15 +293,20 @@ all games will be installed.")))
 		   (replace "mesa" driver)))
    ;; Don't include heroic-client-libs as they are not needed in 32-bit.
    (union32
-    (fhs-union (modify-inputs steam-i686-libs
-			      (replace "mesa" driver)
-			      ;; The first python found will be used and it needs to be
-			      ;; 64-bit.
-			      ;; TODO: Change order in manifest, or set PATH, but Steam
-			      ;; needs a 32-bit ldd (found first?).
-			      (delete "python"))
-               #:name "fhs-union-32"
-               #:system "i686-linux"))
+    (fhs-union
+     `(("i686-libs"
+        ,(fhs-union (modify-inputs steam-i686-libs
+				   (replace "mesa" driver)
+				   ;; The first python found will be used and it needs to be
+				   ;; 64-bit.
+				   ;; TODO: Change order in manifest, or set PATH, but Steam
+				   ;; needs a 32-bit ldd (found first?).
+				   (delete "python"))
+                    #:name "fhs-union-32-libs"
+                    #:system "i686-linux"))
+       ("libextest" ,libextest))
+     #:name "fhs-union-32"
+     #:system "x86_64-linux"))
    (link-files '("share"))
    (description "Heroic is an Open Source Game Launcher.  Right now it supports launching
 games from the Epic Games Store using Legendary, GOG Games using our custom
