@@ -24,6 +24,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages certs)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages elf)
@@ -57,6 +58,7 @@
   #:use-module (gnu packages xorg)
   #:use-module (holo packages controller)
   #:use-module (holo nonguix multiarch-container)
+  #:use-module (holo nongnu packages wine)
   #:use-module (nonguix build-system chromium-binary)
   #:use-module (nonguix utils))
 
@@ -112,7 +114,7 @@ implementation with gogdl and Amazon Games using Nile.")
 (define steam-client
   (package
    (name "steam-client")
-   (version "1.0.0.85")
+   (version "1.0.0.87")
    (source
     (origin
      (method url-fetch)
@@ -120,7 +122,7 @@ implementation with gogdl and Amazon Games using Nile.")
                          version ".tar.gz"))
      (sha256
       (base32
-       "1wdpigrwrjqnf2vlnaw7ani1in8rc92m2l8jp3aww4xl5x53fbbz"))
+       "07xs4wpdiwc671d9qzc92j8ynhc0jw4zzqpkm84q0zrpz797b4v4"))
      (file-name (string-append name "-" version ".tar.gz"))))
    (build-system gnu-build-system)
    (arguments
@@ -165,17 +167,39 @@ implementation with gogdl and Amazon Games using Nile.")
    (license (license:nonfree "file:///share/doc/steam/steam_subscriber_agreement.txt"))
    (supported-systems '("x86_64-linux"))))
 
+(define-public protontricks
+  (package
+   (name "protontricks")
+   (version "1.15.0")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://github.com/Matoking/protontricks")
+	   (commit version)))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "0vp48wxr7lrb3fgnyl74l4lgzlw4838drwwd4kpilpha2i3zlw7r"))))
+   (build-system pyproject-build-system)
+   (arguments (list #:tests? #f))
+   (native-inputs (list python-wheel python-setuptools python-setuptools-scm python-pytest))
+   (propagated-inputs (list winetricks yad zenity python-pillow python-vdf))
+   (home-page "https://github.com/matoking/protontricks")
+   (synopsis "A wrapper that does winetricks things for Proton enabled games, requires Winetricks.")
+   (description "Run Winetricks commands for Steam Play/Proton games among other common Wine features, such as launching external Windows executables.")
+   (license license:gpl3)))
+
 (define steam-client-libs
-  `(("at-spi2-core" ,at-spi2-core)      ; Required (often) for SteamVR interface.
-    ("bash" ,bash)                      ; Required for steam startup.
+  `(("at-spi2-core" ,at-spi2-core) ; Required (often) for SteamVR interface.
+    ("bash" ,bash)		   ; Required for steam startup.
     ("coreutils" ,coreutils)
     ("diffutils" ,diffutils)
     ("dbus-glib" ,dbus-glib)            ; Required for steam browser.
-    ("elfutils" ,elfutils)              ; Required for capturing library dependencies in pv.
-    ("eudev" ,eudev)                    ; Required for steamwebhelper/heavy runtime.
-    ("fontconfig" ,fontconfig)          ; Required for steam client.
-    ("file" ,file)                      ; Used for steam installation.
-    ("find" ,findutils)                 ; Required at least for some logging.
+    ("elfutils" ,elfutils) ; Required for capturing library dependencies in pv.
+    ("eudev" ,eudev)	  ; Required for steamwebhelper/heavy runtime.
+    ("fontconfig" ,fontconfig)	 ; Required for steam client.
+    ("file" ,file)		 ; Used for steam installation.
+    ("find" ,findutils)		 ; Required at least for some logging.
     ("font-google-noto" ,font-google-noto) ; Not required but to match following fonts.
     ;; These next three fonts are to cover emoji and Chinese/Japanese/Korean
     ;; and related scripts.
@@ -184,22 +208,22 @@ implementation with gogdl and Amazon Games using Nile.")
     ("font-google-noto-serif-cjk" ,font-google-noto-serif-cjk)
     ("freetype" ,freetype)              ; Required for steam login.
     ("gawk" ,gawk)
-    ("gdk-pixbuf" ,gdk-pixbuf)          ; Required for steam tray icon.
+    ("gdk-pixbuf" ,gdk-pixbuf)	       ; Required for steam tray icon.
     ;; Required for steam startup; use newer version for better compatibility
     ;; with some games like Dwarf Fortress.
     ("gcc:lib" ,gcc-14 "lib")
     ("grep" ,grep)
     ("libbsd" ,libbsd)
-    ("libcap" ,libcap)                  ; Required for SteamVR, but needs pkexec too.
-    ("libusb" ,libusb)                  ; Required for SteamVR.
-    ("libva" ,libva)                    ; Required for hardware video encoding/decoding.
-    ("libvdpau" ,libvdpau)              ; Required for hardware video encoding/decoding.
+    ("libcap" ,libcap)	 ; Required for SteamVR, but needs pkexec too.
+    ("libusb" ,libusb)	 ; Required for SteamVR.
+    ("libva" ,libva)  ; Required for hardware video encoding/decoding.
+    ("libvdpau" ,libvdpau) ; Required for hardware video encoding/decoding.
     ("libvdpau-va-gl" ,libvdpau-va-gl)  ; Additional VDPAU support.
     ("llvm" ,llvm-for-mesa)             ; Required for mesa.
-    ("lsof" ,lsof)                      ; Required for some friend's list actions.
-    ("mesa" ,mesa)                      ; Required for steam startup.
-    ("nss-certs" ,nss-certs)            ; Required for steam login.
-    ("pciutils" ,pciutils)              ; Tries to run lspci at steam startup.
+    ("lsof" ,lsof)	    ; Required for some friend's list actions.
+    ("mesa" ,mesa)	    ; Required for steam startup.
+    ("nss-certs" ,nss-certs)	; Required for steam login.
+    ("pciutils" ,pciutils)	; Tries to run lspci at steam startup.
     ("procps" ,procps)
     ("libei" ,libei)
     ("libextest" ,libextest)
@@ -207,8 +231,8 @@ implementation with gogdl and Amazon Games using Nile.")
     ("tar" ,tar)
     ("usbutils" ,usbutils)              ; Required for SteamVR.
     ("util-linux" ,util-linux)          ; Required for steam login.
-    ("wayland" ,wayland)                ; Required for mesa vulkan (e.g. libvulkan_radeon).
-    ("xdg-user-dirs" ,xdg-user-dirs)    ; Suppress warning of missing xdg-user-dir.
+    ("wayland" ,wayland) ; Required for mesa vulkan (e.g. libvulkan_radeon).
+    ("xdg-user-dirs" ,xdg-user-dirs) ; Suppress warning of missing xdg-user-dir.
     ("flatpak-xdg-utils" ,flatpak-xdg-utils)
     ("xz" ,xz)
     ("zenity" ,zenity)))                ; Required for progress dialogs.
@@ -225,8 +249,12 @@ implementation with gogdl and Amazon Games using Nile.")
     ("python" ,python)                  ; Required for KillingFloor2 and Wreckfest.
     ("spdlog" ,spdlog)))                ; Required for MangoHud.
 
+(define steam-helpers
+  `(("protontricks" ,protontricks)))
+
 (define steam-container-libs
   (append steam-client-libs
+	  steam-helpers
           steam-gameruntime-libs
           fhs-min-libs))
 
