@@ -1,0 +1,14 @@
+
+* Todos:
+
+** DONE Fooyin plugin support [2/2]
+
+*** DONE Test fooyin scrobble plugin
+
+Needs method of embedding LastFM API key into compiled code.
+
+Quite annoying but I want my dynamic radio support :/
+
+*** DONE Support native-search-path with FOOYIN_PLUGIN_PATH
+
+Instead of using ~wrap-program~ with paths set. Define a search path into ~lib/fooyin/plugins~

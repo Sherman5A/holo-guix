@@ -7,3 +7,4 @@
 *.scm#*
 .#*.scm
 
+.last-fm-env.scm
