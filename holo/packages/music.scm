@@ -46,6 +46,33 @@
       (files (list "lib/fooyin/plugins")))))))
 
 
+(define-public fooyin-nightly
+  (package
+   (inherit fooyin)
+   (name "fooyin-nightly")
+   (version "dbd6cc07c91766bff0671e6f4f613dc6e3d40b45")
+   (source (origin
+	    (method git-fetch)
+	    (uri (git-reference
+		  (url "https://github.com/fooyin/fooyin")
+		  (commit version)))
+	    (file-name (git-file-name name version))
+	    (sha256
+	     (base32
+	      "15k36wj0v3yvjbfwmvgw3mzkag3gx088n3ifccbkm8aaw6zri079"))))
+   (arguments
+    (substitute-keyword-arguments
+     arguments
+     ((#:configure-flags original-flags '())
+      #~(cons "-DINSTALL_HEADERS=ON" #$original-flags)
+      )))
+   (native-search-paths
+    (list
+     (search-path-specification
+      (variable "FOOYIN_PLUGIN_PATH")
+      (files (list "lib/fooyin/plugins")))))))
+
+
 (define-public foo-scrobbler-yin
   (package
    (name "foo-scrobbler-yin")
